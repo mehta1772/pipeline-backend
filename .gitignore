@@ -1,0 +1,11 @@
+node_modules/
+.env
+.env.local
+.env.production
+.DS_Store
+*.log
+test-s3.js
+test-crm.js
+uploads/
+build/
+dist/
