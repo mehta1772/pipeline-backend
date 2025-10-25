@@ -1,4 +1,4 @@
-// // backend/server.js
+// backend/server.js
 // require('dotenv').config();
 // const express = require('express');
 // const cors = require('cors');
@@ -70,7 +70,6 @@
 
 
 
-
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -79,56 +78,58 @@ const MongoStore = require('connect-mongo');
 const { connectDB } = require('./config/db');
 const { initializeCRMSync } = require('./services/crmSync');
 
-// Import routes
 const authRoutes = require('./routes/auth');
 const bookingRoutes = require('./routes/bookings');
 
 const app = express();
 
-// Middleware
+// Trust proxy
+app.set('trust proxy', 1);
+
+// Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ⭐ UPDATED CORS for Production
+// CORS
 const allowedOrigins = [
   'https://doc.enigoal.in',
+  'http://doc.enigoal.in',
   'http://localhost:3000',
-  process.env.FRONTEND_URL
+  'http://localhost:5000'
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, curl)
     if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false);
     }
-    return callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['set-cookie']
 }));
 
-// ⭐ UPDATED Session for Production
+// Session
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'fallback-secret',
   resave: false,
   saveUninitialized: false,
+  name: 'bms.sid',
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,
-    touchAfter: 24 * 3600 // Lazy session update
+    touchAfter: 24 * 3600
   }),
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // true in production
+    secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24, // 24 hours
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Important!
-    domain: process.env.NODE_ENV === 'production' ? '.enigoal.in' : undefined
+    maxAge: 1000 * 60 * 60 * 24,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
   },
-  proxy: process.env.NODE_ENV === 'production' // Trust proxy in production
+  proxy: process.env.NODE_ENV === 'production'
 }));
 
 // Routes
@@ -139,48 +140,35 @@ app.use('/api/bookings', bookingRoutes);
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'Server is running',
-    environment: process.env.NODE_ENV,
-    timestamp: new Date().toISOString()
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
-// Root route
+// Root
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Booking Management System API',
-    version: '1.0.0',
-    endpoints: {
-      health: '/api/health',
-      auth: '/api/auth',
-      bookings: '/api/bookings'
-    }
-  });
+  res.json({ message: 'BMS API v1.0' });
 });
 
-// 404 handler
+// 404
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// Error handling
+// Error handler
 app.use((err, req, res, next) => {
   console.error('Error:', err);
-  res.status(500).json({ 
-    message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
+  res.status(500).json({ message: 'Internal server error' });
 });
 
-// Start server
+// Start
 const PORT = process.env.PORT || 5000;
 connectDB().then(async () => {
   await initializeCRMSync();
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📝 Environment: ${process.env.NODE_ENV}`);
-    console.log(`🌐 CORS enabled for: ${allowedOrigins.join(', ')}`);
+    console.log(`🚀 Server on port ${PORT}`);
+    console.log(`📝 Env: ${process.env.NODE_ENV || 'development'}`);
   });
 }).catch(err => {
-  console.error('Failed to start server:', err);
+  console.error('Failed to start:', err);
   process.exit(1);
 });
