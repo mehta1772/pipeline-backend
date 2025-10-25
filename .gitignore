@@ -9,3 +9,5 @@ test-crm.js
 uploads/
 build/
 dist/
+.vscode/
+.idea/
