@@ -80,6 +80,7 @@ const { initializeCRMSync } = require('./services/crmSync');
 
 const authRoutes = require('./routes/auth');
 const bookingRoutes = require('./routes/bookings');
+const emailRoutes = require('./routes/email'); // ⭐ NEW
 
 const app = express();
 
@@ -135,6 +136,7 @@ app.use(session({
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/email', emailRoutes); // ⭐ NEW
 
 // Health check
 app.get('/api/health', (req, res) => {

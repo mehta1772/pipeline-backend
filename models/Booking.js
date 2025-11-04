@@ -270,6 +270,10 @@ const bookingSchema = new mongoose.Schema(
     remark: String,
     state: String,
     status: { type: String, default: 'Pending' },
+    // ⭐ NEW: Email tracking
+welcome_email_sent: { type: Boolean, default: false },
+welcome_email_sent_at: Date,
+welcome_email_sent_by: String,
     
     // Stage tracking
     current_stage: {
