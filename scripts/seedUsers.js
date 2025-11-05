@@ -14,6 +14,8 @@ const seedUsers = async () => {
       { username: 'purshottamadminx', passwordHash: 'Purshottamx@123', role: 'admin' },
       { username: 'Arunadminx', passwordHash: 'Arunx@123', role: 'admin' },
       { username: 'Shivamadminx', passwordHash: 'Shivamx@123', role: 'admin' },
+      { username: 'Anuragadminx', passwordHash: 'Anuragx@123', role: 'admin' },
+
       // { username: 'admin', passwordHash: 'admin123', role: 'admin' },
       { username: 'manager1', passwordHash: 'password123', role: 'manager' },
       { username: 'manager2', passwordHash: 'password123', role: 'manager' },

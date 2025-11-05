@@ -114,6 +114,7 @@ app.use(cors({
   exposedHeaders: ['set-cookie']
 }));
 
+
 // Session
 app.use(session({
   secret: process.env.SESSION_SECRET || 'fallback-secret',
